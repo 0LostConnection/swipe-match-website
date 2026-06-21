@@ -1,26 +1,108 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Cute "scrapbook / sticker-pack" palette */
+  --cream: #fff7ef;
+  --cream-deep: #ffeede;
+  --ink: #3b2a2a;
+  --ink-soft: #6b5550;
+  --pink: #ff8fb1;
+  --pink-deep: #ff6f9c;
+  --sky: #7fd1ff;
+  --sun: #ffd56b;
+  --mint: #9be7c4;
+  --grape: #b79bff;
+
+  /* Cooler, dimmer palette used on the rejection branch */
+  --cool-bg: #e9ecf5;
+  --cool-ink: #4a4f63;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-cream: var(--cream);
+  --color-cream-deep: var(--cream-deep);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-pink: var(--pink);
+  --color-pink-deep: var(--pink-deep);
+  --color-sky: var(--sky);
+  --color-sun: var(--sun);
+  --color-mint: var(--mint);
+  --color-grape: var(--grape);
+  --color-cool-bg: var(--cool-bg);
+  --color-cool-ink: var(--cool-ink);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(120% 120% at 10% -10%, var(--cream-deep) 0%, transparent 45%),
+    radial-gradient(120% 120% at 110% 10%, #fde9f0 0%, transparent 40%),
+    var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  /* Subtle paper grain for the scrapbook feel */
+  background-attachment: fixed;
+  overscroll-behavior: none;
+}
+
+/* Speckled paper noise overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+  background-image: radial-gradient(rgba(59, 42, 42, 0.05) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.font-display {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Chunky sticker shadow used on cards/buttons */
+.sticker {
+  box-shadow:
+    0 2px 0 rgba(59, 42, 42, 0.12),
+    0 10px 24px -10px rgba(59, 42, 42, 0.35);
+}
+
+.sticker-outline {
+  border: 3px solid var(--ink);
+}
+
+/* Pressable button squish handled mostly in JS, but give a base feel */
+.tap-target {
+  min-height: 48px;
+  min-width: 48px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide scrollbars but keep scrolling on the place list */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

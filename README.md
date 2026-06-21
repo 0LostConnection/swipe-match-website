@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Date Invite 💘
 
-## Getting Started
+A mobile-first, intentionally cute & funny interactive site to ask someone out.
+Built with Next.js (App Router), TypeScript, Tailwind CSS v4, and `motion`
+(Framer Motion). All copy is in Portuguese.
 
-First, run the development server:
+## What it does
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+A single animated state machine walks the visitor through a flow:
+
+```
+intro  →  ask (Sim / Não)
+            ├─ Sim → celebration → place → dates → interests → obrigado
+            └─ Não → coin flip → second chance
+                         ├─ "Mudei de ideia" → coin flip → celebration ...
+                         └─ "Sério?"          → final rejection
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Entry screen adapts based on `localStorage` history:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **First time** – welcome copy
+- **Returning** – "você está aqui de novo!" + emoji flash
+- **Rejected before** – cat GIF interstitial, then the ask
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+When she finishes the happy flow (or hits the final rejection), her answers are
+POSTed to `/api/submit`, which forwards them to your webhook.
 
-## Learn More
+## Getting started
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm install
+cp .env.example .env.local   # then fill in WEBHOOK_URL (optional)
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Open http://localhost:3000 on a phone-sized viewport.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+> Tip: to re-test the different entry scenarios, clear the `oi-luana-state`
+> key from `localStorage` (DevTools → Application → Local Storage).
 
-## Deploy on Vercel
+## The webhook
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`/api/submit` validates the payload and forwards it to `process.env.WEBHOOK_URL`.
+If `WEBHOOK_URL` is empty, it just logs to the server console and returns 200,
+so the app works out of the box during development.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Payload shape (see `lib/types.ts`):
+
+```ts
+type Submission = {
+  outcome: "accepted" | "rejected";
+  place?: { kind: "preset" | "custom"; value: string };
+  availableDates?: string[]; // ISO yyyy-mm-dd
+  interests?: { food: string[]; topics: string[]; custom: string[] };
+  visitCount: number;
+  rejectedBefore: boolean;
+  submittedAt: string; // ISO timestamp
+};
+```
+
+Build any receiver you like (serverless function, Google Apps Script web app,
+Discord/Telegram proxy, n8n/Zapier, etc.) and paste its URL into `WEBHOOK_URL`.
+
+## Editing content
+
+All Portuguese copy, the suggested **places**, and the **interest tags** live in
+[`lib/content.ts`](lib/content.ts). Tweak names, times, addresses, and tags
+there.
+
+## Assets
+
+Drop-in media lives in `public/assets/`:
+
+| File | Used on |
+| --- | --- |
+| `pug-hat.png` | Main ask (happy pug) |
+| `pug-sad.png` | Second chance + final rejection |
+| `cat.gif` | "Rejected before" interstitial |
+| `dog-butterfly.gif` | Celebration |
+| `emoji-guy-interest-screen.png` | Interests screen |
+| `emoji-guy-tongue-out-end.png` | Thank-you screen |
+
+To use a dedicated "hiding pug" for the final rejection, add
+`public/assets/pug-hiding.png` and swap the `src` in
+`components/screens/FinalRejectionScreen.tsx`.
+
+## Accessibility
+
+Respects `prefers-reduced-motion`: big motion is replaced with simple fades and
+timed interstitials are shortened.
