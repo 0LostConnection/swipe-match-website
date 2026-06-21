@@ -1,4 +1,4 @@
-import { sql } from "@vercel/postgres";
+import { neon } from "@neondatabase/serverless";
 import type { Submission } from "./types";
 
 export type StoredSubmission = {
@@ -13,13 +13,25 @@ export function isDbConfigured(): boolean {
   return Boolean(process.env.POSTGRES_URL);
 }
 
+let sql: ReturnType<typeof neon> | null = null;
+
+function getSql() {
+  if (!sql) {
+    const url = process.env.POSTGRES_URL;
+    if (!url) throw new Error("POSTGRES_URL is not set");
+    sql = neon(url);
+  }
+  return sql;
+}
+
 let schemaReady: Promise<void> | null = null;
 
 export async function ensureSchema(): Promise<void> {
   if (!isDbConfigured()) return;
   if (!schemaReady) {
     schemaReady = (async () => {
-      await sql`
+      const query = getSql();
+      await query`
         CREATE TABLE IF NOT EXISTS submissions (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
           outcome TEXT NOT NULL CHECK (outcome IN ('accepted', 'rejected')),
@@ -28,7 +40,7 @@ export async function ensureSchema(): Promise<void> {
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         )
       `;
-      await sql`
+      await query`
         CREATE INDEX IF NOT EXISTS idx_submissions_submitted_at
         ON submissions (submitted_at DESC)
       `;
@@ -40,7 +52,8 @@ export async function ensureSchema(): Promise<void> {
 export async function insertSubmission(body: Submission): Promise<void> {
   if (!isDbConfigured()) return;
   await ensureSchema();
-  await sql`
+  const query = getSql();
+  await query`
     INSERT INTO submissions (outcome, payload, submitted_at)
     VALUES (
       ${body.outcome},
@@ -53,7 +66,8 @@ export async function insertSubmission(body: Submission): Promise<void> {
 export async function listSubmissions(): Promise<StoredSubmission[]> {
   if (!isDbConfigured()) return [];
   await ensureSchema();
-  const { rows } = await sql`
+  const query = getSql();
+  const rows = await query`
     SELECT
       id,
       outcome,
