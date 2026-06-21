@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { insertSubmission, isDbConfigured } from "@/lib/db";
 import type { Submission } from "@/lib/types";
 
 function isValid(body: unknown): body is Submission {
@@ -22,6 +23,15 @@ export async function POST(request: Request) {
 
   if (!isValid(body)) {
     return NextResponse.json({ ok: false, error: "invalid payload" }, { status: 422 });
+  }
+
+  if (isDbConfigured()) {
+    try {
+      await insertSubmission(body);
+    } catch (err) {
+      console.error("[submit] database insert failed:", err);
+      return NextResponse.json({ ok: false, error: "storage failed" }, { status: 500 });
+    }
   }
 
   const webhookUrl = process.env.WEBHOOK_URL;

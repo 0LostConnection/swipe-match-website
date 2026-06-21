@@ -23,13 +23,14 @@ Entry screen adapts based on `localStorage` history:
 - **Rejected before** – cat GIF interstitial, then the ask
 
 When she finishes the happy flow (or hits the final rejection), her answers are
-POSTed to `/api/submit`, which forwards them to your webhook.
+POSTed to `/api/submit`, which saves them to Vercel Postgres and forwards them to
+your webhook.
 
 ## Getting started
 
 ```bash
 npm install
-cp .env.example .env.local   # then fill in WEBHOOK_URL (optional)
+cp .env.example .env.local   # then fill in env vars (see below)
 npm run dev
 ```
 
@@ -60,6 +61,35 @@ type Submission = {
 
 Build any receiver you like (serverless function, Google Apps Script web app,
 Discord/Telegram proxy, n8n/Zapier, etc.) and paste its URL into `WEBHOOK_URL`.
+
+## Admin
+
+Responses are stored in **Vercel Postgres** and viewable at `/admin` (password-protected; not linked from the public flow).
+
+### Vercel setup
+
+1. Vercel Dashboard → your project → **Storage** → Create Database → **Postgres**
+2. Connect the database to the project (`POSTGRES_URL` is injected automatically)
+3. Settings → Environment Variables:
+   - `ADMIN_PASSWORD` — password for `/admin`
+   - `ADMIN_SESSION_SECRET` — long random string (e.g. `openssl rand -base64 32`)
+   - `WEBHOOK_URL` — optional, same as before
+
+### Local development
+
+Pull env vars from Vercel (includes `POSTGRES_URL` after Storage is connected):
+
+```bash
+vercel env pull .env.local
+```
+
+Set `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET` in `.env.local` if they are not in the pulled file.
+
+Without Postgres configured, `/api/submit` still works (log + webhook only); `/admin` shows a “database not configured” notice.
+
+### What you see in the dashboard
+
+Each card shows outcome (accepted/rejected), timestamp, place, available dates, interests (when accepted), visit count, and whether she had rejected before.
 
 ## Editing content
 
