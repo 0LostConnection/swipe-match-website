@@ -4,6 +4,8 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
 import { ask, secondChance } from "@/lib/content";
+import { ASSETS } from "@/lib/assets";
+import { preloadIntent } from "@/lib/flow-preload";
 import { AnimatedText } from "@/components/ui/AnimatedText";
 import { Squish } from "@/components/ui/Squish";
 import { ScreenShell } from "@/components/ui/ScreenShell";
@@ -20,7 +22,15 @@ const FLOAT_PHRASE = ask.highlight;
 
 const layoutSpring = { type: "spring" as const, stiffness: 300, damping: 30 };
 
-function EvasiveNo({ label, onGiveUp }: { label: string; onGiveUp: () => void }) {
+function EvasiveNo({
+  label,
+  onGiveUp,
+  onIntent,
+}: {
+  label: string;
+  onGiveUp: () => void;
+  onIntent?: () => void;
+}) {
   const reduce = useReducedMotion();
   const [tries, setTries] = useState(0);
   const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -34,7 +44,11 @@ function EvasiveNo({ label, onGiveUp }: { label: string; onGiveUp: () => void })
   return (
     <motion.button
       type="button"
-      onHoverStart={() => !settled && dodge()}
+      onHoverStart={() => {
+        onIntent?.();
+        if (!settled) dodge();
+      }}
+      onFocus={() => onIntent?.()}
       onClick={() => (settled ? onGiveUp() : dodge())}
       animate={{
         x: settled ? 0 : pos.x,
@@ -116,7 +130,7 @@ export function MainAskScreen({
             transition={{ duration: 0.5 }}
           >
             <Image
-              src="/assets/pug-hat.png"
+              src={ASSETS.pugHat}
               alt={ask.imageAlts.happy}
               fill
               unoptimized
@@ -131,10 +145,11 @@ export function MainAskScreen({
             transition={{ duration: 0.5 }}
           >
             <Image
-              src="/assets/pug-sad.png"
+              src={ASSETS.pugSad}
               alt={ask.imageAlts.sad}
               fill
               unoptimized
+              priority
               sizes="200px"
               className="object-cover"
             />
@@ -206,10 +221,20 @@ export function MainAskScreen({
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
               >
-                <Squish variant="ghost" onClick={onSerio}>
+                <Squish
+                  variant="ghost"
+                  onClick={onSerio}
+                  onMouseEnter={() => preloadIntent("serio")}
+                  onFocus={() => preloadIntent("serio")}
+                >
                   {secondChance.serio}
                 </Squish>
-                <Squish variant="mint" onClick={onChangedMind}>
+                <Squish
+                  variant="mint"
+                  onClick={onChangedMind}
+                  onMouseEnter={() => preloadIntent("changedMind")}
+                  onFocus={() => preloadIntent("changedMind")}
+                >
                   {secondChance.changedMind}
                 </Squish>
               </motion.div>
@@ -222,8 +247,17 @@ export function MainAskScreen({
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
               >
-                <EvasiveNo label={ask.no} onGiveUp={onNo} />
-                <Squish variant="pink" onClick={onYes}>
+                <EvasiveNo
+                  label={ask.no}
+                  onGiveUp={onNo}
+                  onIntent={() => preloadIntent("no")}
+                />
+                <Squish
+                  variant="pink"
+                  onClick={onYes}
+                  onMouseEnter={() => preloadIntent("yes")}
+                  onFocus={() => preloadIntent("yes")}
+                >
                   {ask.yesButton}
                 </Squish>
               </motion.div>

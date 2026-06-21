@@ -16,6 +16,7 @@ import {
 } from "@/lib/storage";
 import { submitAnswers } from "@/lib/submit";
 import type { Submission } from "@/lib/types";
+import { useFlowAssetPreload } from "@/hooks/useFlowAssetPreload";
 
 import { CatInterstitial } from "./screens/CatInterstitial";
 import { CelebrationScreen } from "./screens/CelebrationScreen";
@@ -56,6 +57,8 @@ export function Experience() {
 function ExperienceInner({ meta }: { meta: Meta }) {
   const [state, dispatch] = useReducer(flowReducer, meta.scenario, initFlow);
   const [confetti, setConfetti] = useState(false);
+
+  useFlowAssetPreload(state.screen, meta.scenario);
 
   const go = useCallback((screen: Screen) => dispatch({ type: "GO", screen }), []);
 

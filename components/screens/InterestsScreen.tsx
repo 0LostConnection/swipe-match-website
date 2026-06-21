@@ -2,6 +2,8 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { interestsCopy } from "@/lib/content";
+import { ASSETS } from "@/lib/assets";
+import { preloadIntent } from "@/lib/flow-preload";
 import type { Interests } from "@/lib/types";
 import { AnimatedText } from "@/components/ui/AnimatedText";
 import { ScreenShell } from "@/components/ui/ScreenShell";
@@ -49,10 +51,11 @@ export function InterestsScreen({ value, onChange, onDone }: Props) {
           }
         >
           <Image
-            src="/assets/emoji-guy-interest-screen.png"
+            src={ASSETS.emojiGuyInterest}
             alt={interestsCopy.imageAlt}
             fill
             unoptimized
+            priority
             sizes="72px"
             className="object-contain"
           />
@@ -69,6 +72,8 @@ export function InterestsScreen({ value, onChange, onDone }: Props) {
           className="w-full"
           disabled={!total}
           onClick={onDone}
+          onMouseEnter={() => preloadIntent("interestsDone")}
+          onFocus={() => preloadIntent("interestsDone")}
         >
           {interestsCopy.done}
         </Squish>

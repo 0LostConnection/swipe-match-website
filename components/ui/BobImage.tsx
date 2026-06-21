@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { preload } from "react-dom";
 import Image from "next/image";
 
 type Props = {
@@ -27,6 +28,10 @@ export function BobImage({
 }: Props) {
   const reduce = useReducedMotion();
   const doBob = bob && !reduce;
+
+  if (priority) {
+    preload(src, { as: "image" });
+  }
 
   return (
     <motion.div

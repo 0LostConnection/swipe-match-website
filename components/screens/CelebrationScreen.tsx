@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { celebration as celebrationCopy } from "@/lib/content";
+import { ASSETS } from "@/lib/assets";
 import { BobImage } from "@/components/ui/BobImage";
 import { ScreenShell } from "@/components/ui/ScreenShell";
 
@@ -36,7 +37,7 @@ export function CelebrationScreen({ onDone }: Props) {
           transition={{ type: "spring", stiffness: 260, damping: 14 }}
         >
           <BobImage
-            src="/assets/dog-butterfly.gif"
+            src={ASSETS.dogButterfly}
             alt={celebrationCopy.imageAlt}
             size={280}
             bob={false}

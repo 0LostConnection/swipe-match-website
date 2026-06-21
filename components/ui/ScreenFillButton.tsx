@@ -7,6 +7,7 @@ import { Squish } from "./Squish";
 type Props = {
   label: string;
   onComplete: () => void;
+  onIntent?: () => void;
   color?: string; // css color for the expanding circle
   variant?: "pink" | "sky" | "sun" | "mint";
 };
@@ -18,6 +19,7 @@ type Props = {
 export function ScreenFillButton({
   label,
   onComplete,
+  onIntent,
   color = "var(--pink)",
   variant = "pink",
 }: Props) {
@@ -35,7 +37,13 @@ export function ScreenFillButton({
 
   return (
     <div className="relative inline-flex items-center justify-center">
-      <Squish variant={variant} onClick={handleClick} disabled={filling}>
+      <Squish
+        variant={variant}
+        onClick={handleClick}
+        disabled={filling}
+        onMouseEnter={onIntent}
+        onFocus={onIntent}
+      >
         {label}
       </Squish>
 

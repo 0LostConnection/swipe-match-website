@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
 import { thankYou } from "@/lib/content";
+import { ASSETS } from "@/lib/assets";
 import { AnimatedText } from "@/components/ui/AnimatedText";
 import { ScreenShell } from "@/components/ui/ScreenShell";
 
@@ -29,7 +30,7 @@ export function ThankYouScreen({ onRestart }: Props) {
         }}
       >
         <Image
-          src="/assets/emoji-guy-tongue-out-end.png"
+          src={ASSETS.emojiGuyEnd}
           alt={thankYou.imageAlt}
           fill
           unoptimized

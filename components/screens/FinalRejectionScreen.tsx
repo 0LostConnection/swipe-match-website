@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { finalRejection } from "@/lib/content";
+import { ASSETS } from "@/lib/assets";
 import { BobImage } from "@/components/ui/BobImage";
 import { ScreenShell } from "@/components/ui/ScreenShell";
 import { Squish } from "@/components/ui/Squish";
@@ -48,11 +49,12 @@ export function FinalRejectionScreen() {
         transition={{ duration: 0.8 }}
       >
         <BobImage
-          src="/assets/pug-sad.png"
+          src={ASSETS.pugSad}
           alt={finalRejection.imageAlt}
           size={200}
           bob={false}
           tilt={-6}
+          priority
         />
       </motion.div>
 

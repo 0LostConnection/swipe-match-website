@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { intro } from "@/lib/content";
+import { preloadIntent } from "@/lib/flow-preload";
 import type { EntryScenario } from "@/lib/storage";
 import { AnimatedText } from "@/components/ui/AnimatedText";
 import { ScreenFillButton } from "@/components/ui/ScreenFillButton";
@@ -61,6 +62,9 @@ export function IntroScreen({ scenario, onStart }: Props) {
           variant="pink"
           color="var(--pink)"
           onComplete={handleComplete}
+          onIntent={() =>
+            preloadIntent(scenario === "rejected" ? "introRejected" : "introDefault")
+          }
         />
       </motion.div>
 

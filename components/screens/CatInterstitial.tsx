@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { catInterstitial as catCopy } from "@/lib/content";
+import { ASSETS } from "@/lib/assets";
 import { BobImage } from "@/components/ui/BobImage";
 import { ScreenShell } from "@/components/ui/ScreenShell";
 import { Squish } from "@/components/ui/Squish";
@@ -32,7 +33,7 @@ export function CatInterstitial({ onDone }: Props) {
           rotate: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
         }}
       >
-        <BobImage src="/assets/cat.gif" alt={catCopy.imageAlt} size={260} bob={false} priority />
+        <BobImage src={ASSETS.cat} alt={catCopy.imageAlt} size={260} bob={false} priority />
       </motion.div>
 
       <p className="mt-6 font-display text-xl text-ink-soft">
