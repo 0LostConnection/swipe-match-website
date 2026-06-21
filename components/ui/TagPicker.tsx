@@ -47,7 +47,7 @@ export function TagPicker({ value, onChange }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  const toggle = (cat: "food" | "topics", option: string) => {
+  const toggle = (cat: "food" | "topics" | "music", option: string) => {
     const list = value[cat];
     const next = list.includes(option)
       ? list.filter((x) => x !== option)

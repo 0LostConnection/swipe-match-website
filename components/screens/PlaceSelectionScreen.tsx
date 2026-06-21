@@ -29,35 +29,38 @@ export function PlaceSelectionScreen({ selected, onSelect, onNext }: Props) {
       />
 
       <div className="relative mt-5 min-h-0 flex-1">
-        <div className="no-scrollbar h-full space-y-3 overflow-y-auto px-1 pb-12 pt-1">
+        <div className="no-scrollbar h-full space-y-1 overflow-y-auto px-2 pb-12 pt-2">
           {PLACES.map((p, i) => (
-            <PlaceCard
-              key={p.id}
-              place={p}
-              index={i}
-              selected={
-                selected?.kind === "preset" && selected.value === p.name
-              }
-              onSelect={() => onSelect({ kind: "preset", value: p.name })}
-            />
+            <div key={p.id} className="p-1">
+              <PlaceCard
+                place={p}
+                index={i}
+                selected={
+                  selected?.kind === "preset" && selected.value === p.name
+                }
+                onSelect={() => onSelect({ kind: "preset", value: p.name })}
+              />
+            </div>
           ))}
 
           {selected?.kind === "custom" && !suggestOpen && (
-            <div className="flex items-center gap-3 rounded-3xl bg-mint/40 sticker-outline px-5 py-4 text-ink">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm text-ink-soft">{placeCopy.customLabel}</p>
-                <p className="font-display text-lg font-semibold break-words">
-                  {selected.value}
-                </p>
+            <div className="p-1">
+              <div className="flex items-center gap-3 rounded-3xl bg-mint/40 sticker-outline px-5 py-4 text-ink">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-ink-soft">{placeCopy.customLabel}</p>
+                  <p className="font-display text-lg font-semibold break-words">
+                    {selected.value}
+                  </p>
+                </div>
+                <motion.button
+                  type="button"
+                  onClick={() => setSuggestOpen(true)}
+                  whileTap={{ scale: 0.94 }}
+                  className="tap-target shrink-0 rounded-full border-3 border-ink/20 bg-white/70 px-4 py-2 font-display text-sm font-semibold text-ink-soft"
+                >
+                  {placeCopy.editButton}
+                </motion.button>
               </div>
-              <motion.button
-                type="button"
-                onClick={() => setSuggestOpen(true)}
-                whileTap={{ scale: 0.94 }}
-                className="tap-target shrink-0 rounded-full border-3 border-ink/20 bg-white/70 px-4 py-2 font-display text-sm font-semibold text-ink-soft"
-              >
-                {placeCopy.editButton}
-              </motion.button>
             </div>
           )}
 
@@ -72,14 +75,16 @@ export function PlaceSelectionScreen({ selected, onSelect, onNext }: Props) {
           />
 
           {!suggestOpen && selected?.kind !== "custom" && (
-            <motion.button
-              type="button"
-              onClick={() => setSuggestOpen(true)}
-              whileTap={{ scale: 0.96 }}
-              className="tap-target w-full rounded-3xl border-3 border-dashed border-ink/25 bg-white/40 px-5 py-4 font-display text-ink-soft"
-            >
-              ＋ {placeCopy.suggestButton}
-            </motion.button>
+            <div className="p-1">
+              <motion.button
+                type="button"
+                onClick={() => setSuggestOpen(true)}
+                whileTap={{ scale: 0.96 }}
+                className="tap-target w-full rounded-3xl border-3 border-dashed border-ink/25 bg-white/40 px-5 py-4 font-display text-ink-soft"
+              >
+                ＋ {placeCopy.suggestButton}
+              </motion.button>
+            </div>
           )}
         </div>
 

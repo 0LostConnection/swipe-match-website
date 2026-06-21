@@ -83,6 +83,7 @@ export function SubmissionCard({ submission }: { submission: Submission }) {
         <div className="mt-4 space-y-3">
           <TagList label="Comida" items={submission.interests.food} />
           <TagList label="Assuntos" items={submission.interests.topics} />
+          <TagList label="Música" items={submission.interests.music ?? []} />
           <TagList label="Outros" items={submission.interests.custom} />
         </div>
       ) : null}

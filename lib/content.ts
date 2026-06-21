@@ -78,32 +78,32 @@ export type Place = {
 
 export const PLACES: Place[] = [
   {
-    id: "cafe",
-    name: "Café da esquina",
-    time: "Tarde, 15h",
-    address: "Rua de exemplo, 123",
-    emoji: "☕",
+    id: "cajulimao",
+    name: "Boteco Caju Limão",
+    time: "Sex-Sáb 11:30-01:00",
+    address: "Asa Norte",
+    emoji: "🍋",
   },
   {
-    id: "sorvete",
-    name: "Sorveteria artesanal",
-    time: "Fim de tarde, 17h",
-    address: "Av. dos doces, 45",
-    emoji: "🍦",
+    id: "faustomanoel",
+    name: "Fausto & Manoel",
+    time: "Quar-Sáb 11:00-01:00",
+    address: "Asa Norte",
+    emoji: "🍻",
   },
   {
-    id: "parque",
-    name: "Parque + piquenique",
-    time: "Manhã, 10h",
-    address: "Parque central",
-    emoji: "🧺",
+    id: "galpao17",
+    name: "Galpão 17",
+    time: "Sex-Sáb 11:00-00:00",
+    address: "Asa Norte",
+    emoji: "🎸",
   },
   {
-    id: "cinema",
-    name: "Cinema",
-    time: "Noite, 20h",
-    address: "Shopping de exemplo",
-    emoji: "🎬",
+    id: "hopcapitalbeer",
+    name: "Hop Capital Beer",
+    time: "Sex 11:00-01:00 | Sáb 12:00-02:00",
+    address: "SIA",
+    emoji: "🍺",
   },
 ];
 
@@ -123,7 +123,7 @@ export const interestsCopy = {
 } as const;
 
 export const INTEREST_CATEGORIES: {
-  id: "food" | "topics";
+  id: "food" | "topics" | "music";
   label: string;
   emoji: string;
   options: string[];
@@ -156,6 +156,22 @@ export const INTEREST_CATEGORIES: {
       "Games",
       "Livros",
       "Natureza",
+    ],
+  },
+  {
+    id: "music",
+    label: "Música",
+    emoji: "🎵",
+    options: [
+      "MPB",
+      "Rock",
+      "Pop",
+      "Eletrônica",
+      "Pagode",
+      "Forró",
+      "Samba",
+      "Sertanejo",
+      "Funk",
     ],
   },
 ];

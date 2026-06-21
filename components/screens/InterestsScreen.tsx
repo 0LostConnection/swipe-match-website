@@ -20,7 +20,10 @@ type Props = {
 export function InterestsScreen({ value, onChange, onDone }: Props) {
   const reduce = useReducedMotion();
   const total =
-    value.food.length + value.topics.length + value.custom.length;
+    value.food.length +
+    value.topics.length +
+    value.music.length +
+    value.custom.length;
 
   return (
     <ScreenShell scroll>

@@ -8,6 +8,7 @@ export type PlaceChoice = {
 export type Interests = {
   food: string[];
   topics: string[];
+  music: string[];
   custom: string[];
 };
 

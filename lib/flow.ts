@@ -35,7 +35,7 @@ export type FlowAction =
 export const EMPTY_DATA: FlowData = {
   place: undefined,
   availableDates: [],
-  interests: { food: [], topics: [], custom: [] },
+  interests: { food: [], topics: [], music: [], custom: [] },
 };
 
 export function initFlow(scenario: EntryScenario): FlowState {
