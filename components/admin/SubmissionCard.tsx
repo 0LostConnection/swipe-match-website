@@ -7,9 +7,23 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   timeStyle: "short",
 });
 
+const dayFormatter = new Intl.DateTimeFormat("pt-BR", {
+  weekday: "short",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
 function formatDate(iso: string): string {
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? iso : dateFormatter.format(d);
+}
+
+function formatAvailableDay(value: string): string {
+  const [y, m, d] = value.split("-").map(Number);
+  if (!y || !m || !d) return value;
+  const date = new Date(y, m - 1, d);
+  return Number.isNaN(date.getTime()) ? value : dayFormatter.format(date);
 }
 
 function CardChips({ label, ids }: { label: string; ids: string[] }) {
@@ -52,6 +66,23 @@ export function SubmissionCard({ session }: { session: Submission }) {
       </div>
 
       <div className="mt-4 space-y-3">
+        {session.availableDates && session.availableDates.length > 0 ? (
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-widest text-text-muted">
+              Dias disponíveis
+            </p>
+            <ul className="mt-1.5 flex flex-wrap gap-1.5">
+              {[...session.availableDates].sort().map((day) => (
+                <li
+                  key={day}
+                  className="rounded-full border border-accent-secondary/40 bg-accent-secondary/10 px-2.5 py-0.5 text-sm text-text-primary"
+                >
+                  📅 {formatAvailableDay(day)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
         <CardChips label="Convergência" ids={session.convergenceIds} />
         <CardChips label="Curtidos" ids={session.likedCardIds} />
       </div>
