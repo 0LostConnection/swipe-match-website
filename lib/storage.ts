@@ -1,19 +1,13 @@
 "use client";
 
-const KEY = "oi-luana-state";
-
-export type EntryScenario = "first" | "returning" | "rejected";
+const KEY = "archetype-state";
 
 type Persisted = {
   visitCount: number;
-  rejectedBefore: boolean;
-  accepted: boolean;
 };
 
 const DEFAULT: Persisted = {
   visitCount: 0,
-  rejectedBefore: false,
-  accepted: false,
 };
 
 function read(): Persisted {
@@ -37,39 +31,12 @@ function write(value: Persisted) {
 }
 
 /**
- * Reads stored history, returns the entry scenario, and increments the visit
- * counter. Call once on mount.
+ * Increments the anonymous visit counter and returns the new value. Call once
+ * on mount. Client-only to avoid hydration mismatch.
  */
-export function registerVisit(): {
-  scenario: EntryScenario;
-  visitCount: number;
-  rejectedBefore: boolean;
-} {
+export function registerVisit(): { visitCount: number } {
   const state = read();
-  const isFirst = state.visitCount === 0;
-  const next: Persisted = { ...state, visitCount: state.visitCount + 1 };
+  const next: Persisted = { visitCount: state.visitCount + 1 };
   write(next);
-
-  let scenario: EntryScenario;
-  if (isFirst) scenario = "first";
-  else if (state.rejectedBefore && !state.accepted) scenario = "rejected";
-  else scenario = "returning";
-
-  return {
-    scenario,
-    visitCount: next.visitCount,
-    rejectedBefore: next.rejectedBefore,
-  };
-}
-
-export function markRejected() {
-  write({ ...read(), rejectedBefore: true });
-}
-
-export function markAccepted() {
-  write({ ...read(), accepted: true });
-}
-
-export function getHistory() {
-  return read();
+  return { visitCount: next.visitCount };
 }

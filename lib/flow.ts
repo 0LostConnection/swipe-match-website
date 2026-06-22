@@ -1,64 +1,114 @@
-import type { EntryScenario } from "./storage";
-import type { Interests, PlaceChoice } from "./types";
+import { CREATOR_PROFILE } from "@/config/creator";
+import { CARDS } from "./cards";
+import { buildSession } from "./deck";
+import { calculateConvergence, calculateResult } from "./scoring";
+import type { ArchetypeId, Card, SwipeDirection } from "./types";
 
 export type Screen =
-  | "intro"
-  | "cat"
-  | "ask"
-  | "celebration"
-  | "place"
-  | "dates"
-  | "interests"
-  | "thankyou"
-  | "secondChance"
-  | "finalRejection";
-
-export type FlowData = {
-  place?: PlaceChoice;
-  availableDates: string[];
-  interests: Interests;
-};
+  | "sound"
+  | "welcome"
+  | "swipe"
+  | "loading"
+  | "reveal"
+  | "convergence";
 
 export type FlowState = {
-  scenario: EntryScenario;
   screen: Screen;
-  data: FlowData;
+  deck: Card[];
+  currentIndex: number;
+  likedIds: string[];
+  result: ArchetypeId | null;
+  convergence: Card[];
 };
 
 export type FlowAction =
+  | { type: "PROCEED_SOUND" }
+  | { type: "START" }
+  | { type: "SWIPE"; dir: SwipeDirection }
+  | { type: "FINISH_LOADING" }
   | { type: "GO"; screen: Screen }
-  | { type: "SET_PLACE"; place: PlaceChoice }
-  | { type: "SET_DATES"; dates: string[] }
-  | { type: "SET_INTERESTS"; interests: Interests }
   | { type: "RESTART" };
 
-export const EMPTY_DATA: FlowData = {
-  place: undefined,
-  availableDates: [],
-  interests: { food: [], topics: [], music: [], custom: [] },
-};
-
-export function initFlow(scenario: EntryScenario): FlowState {
-  return { scenario, screen: "intro", data: { ...EMPTY_DATA } };
+export function initFlow(): FlowState {
+  return {
+    screen: "sound",
+    deck: [],
+    currentIndex: 0,
+    likedIds: [],
+    result: null,
+    convergence: [],
+  };
 }
 
-/** Screens that should render in the cooler "rejection" palette. */
-export function isCoolScreen(screen: Screen): boolean {
-  return screen === "secondChance" || screen === "finalRejection";
+/** Computes result + convergence from a finished set of liked card IDs. */
+function resolveOutcome(
+  likedIds: string[],
+  deck: Card[],
+): { result: ArchetypeId; convergence: Card[] } {
+  const likedCards = deck.filter((c) => likedIds.includes(c.id));
+  const result = calculateResult(likedCards);
+  const convergence = calculateConvergence(
+    likedIds,
+    CREATOR_PROFILE.likedCardIds,
+    CARDS,
+  );
+  return { result, convergence };
 }
 
 export function flowReducer(state: FlowState, action: FlowAction): FlowState {
   switch (action.type) {
+    case "PROCEED_SOUND":
+      return { ...state, screen: "welcome" };
+
+    case "START": {
+      return {
+        ...state,
+        screen: "swipe",
+        deck: buildSession(CARDS),
+        currentIndex: 0,
+        likedIds: [],
+        result: null,
+        convergence: [],
+      };
+    }
+
+    case "SWIPE": {
+      const card = state.deck[state.currentIndex];
+      if (!card) return state;
+
+      const likedIds =
+        action.dir === "like" ? [...state.likedIds, card.id] : state.likedIds;
+      const nextIndex = state.currentIndex + 1;
+      const isLast = nextIndex >= state.deck.length;
+
+      if (!isLast) {
+        return { ...state, likedIds, currentIndex: nextIndex };
+      }
+
+      // Deck exhausted: resolve outcome and move to the loading beat.
+      const { result, convergence } = resolveOutcome(likedIds, state.deck);
+      return {
+        ...state,
+        likedIds,
+        currentIndex: nextIndex,
+        result,
+        convergence,
+        screen: "loading",
+      };
+    }
+
+    case "FINISH_LOADING":
+      return { ...state, screen: "reveal" };
+
     case "GO":
       return { ...state, screen: action.screen };
-    case "SET_PLACE":
-      return { ...state, data: { ...state.data, place: action.place } };
-    case "SET_DATES":
-      return { ...state, data: { ...state.data, availableDates: action.dates } };
-    case "SET_INTERESTS":
-      return { ...state, data: { ...state.data, interests: action.interests } };
+
     case "RESTART":
-      return { ...state, screen: "intro", data: { ...EMPTY_DATA } };
+      return {
+        ...initFlow(),
+        screen: "welcome",
+      };
+
     default:
       return state;
   }

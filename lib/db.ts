@@ -1,9 +1,9 @@
 import { neon } from "@neondatabase/serverless";
-import type { Submission } from "./types";
+import type { ArchetypeId, Submission } from "./types";
 
-export type StoredSubmission = {
+export type StoredSession = {
   id: string;
-  outcome: Submission["outcome"];
+  archetype: ArchetypeId;
   payload: Submission;
   submittedAt: string;
   createdAt: string;
@@ -32,50 +32,50 @@ export async function ensureSchema(): Promise<void> {
     schemaReady = (async () => {
       const query = getSql();
       await query`
-        CREATE TABLE IF NOT EXISTS submissions (
+        CREATE TABLE IF NOT EXISTS archetype_sessions (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          outcome TEXT NOT NULL CHECK (outcome IN ('accepted', 'rejected')),
+          archetype TEXT NOT NULL,
           payload JSONB NOT NULL,
           submitted_at TIMESTAMPTZ NOT NULL,
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         )
       `;
       await query`
-        CREATE INDEX IF NOT EXISTS idx_submissions_submitted_at
-        ON submissions (submitted_at DESC)
+        CREATE INDEX IF NOT EXISTS idx_archetype_sessions_submitted_at
+        ON archetype_sessions (submitted_at DESC)
       `;
     })();
   }
   await schemaReady;
 }
 
-export async function insertSubmission(body: Submission): Promise<void> {
+export async function insertSession(body: Submission): Promise<void> {
   if (!isDbConfigured()) return;
   await ensureSchema();
   const query = getSql();
   await query`
-    INSERT INTO submissions (outcome, payload, submitted_at)
+    INSERT INTO archetype_sessions (archetype, payload, submitted_at)
     VALUES (
-      ${body.outcome},
+      ${body.archetype},
       ${JSON.stringify(body)}::jsonb,
       ${body.submittedAt}
     )
   `;
 }
 
-export async function listSubmissions(): Promise<StoredSubmission[]> {
+export async function listSessions(): Promise<StoredSession[]> {
   if (!isDbConfigured()) return [];
   await ensureSchema();
   const query = getSql();
   const rows = await query`
     SELECT
       id,
-      outcome,
+      archetype,
       payload,
       submitted_at AS "submittedAt",
       created_at AS "createdAt"
-    FROM submissions
+    FROM archetype_sessions
     ORDER BY submitted_at DESC
   `;
-  return rows as StoredSubmission[];
+  return rows as StoredSession[];
 }

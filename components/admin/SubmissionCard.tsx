@@ -1,3 +1,5 @@
+import { getArchetype } from "@/lib/archetypes";
+import { getCard } from "@/lib/cards";
 import type { Submission } from "@/lib/types";
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
@@ -10,94 +12,64 @@ function formatDate(iso: string): string {
   return Number.isNaN(d.getTime()) ? iso : dateFormatter.format(d);
 }
 
-function formatDay(iso: string): string {
-  const [y, m, day] = iso.split("-");
-  if (!y || !m || !day) return iso;
-  return `${day}/${m}/${y}`;
-}
-
-function TagList({ label, items }: { label: string; items: string[] }) {
-  if (items.length === 0) return null;
+function CardChips({ label, ids }: { label: string; ids: string[] }) {
+  if (ids.length === 0) return null;
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">{label}</p>
-      <ul className="mt-1 flex flex-wrap gap-1.5">
-        {items.map((item) => (
-          <li
-            key={item}
-            className="rounded-full bg-cream-deep px-2.5 py-0.5 text-sm text-ink"
-          >
-            {item}
-          </li>
-        ))}
+      <p className="font-mono text-[11px] uppercase tracking-widest text-text-muted">
+        {label}
+      </p>
+      <ul className="mt-1.5 flex flex-wrap gap-1.5">
+        {ids.map((id) => {
+          const card = getCard(id);
+          return (
+            <li
+              key={id}
+              className="rounded-full bg-bg-elevated px-2.5 py-0.5 text-sm text-text-primary"
+            >
+              {card ? `${card.emoji} ${card.label}` : id}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
 }
 
-export function SubmissionCard({ submission }: { submission: Submission }) {
-  const accepted = submission.outcome === "accepted";
+export function SubmissionCard({ session }: { session: Submission }) {
+  const archetype = getArchetype(session.archetype);
 
   return (
-    <article className="rounded-2xl border border-ink/10 bg-white/70 p-5 shadow-sm">
+    <article className="rounded-2xl border border-border bg-bg-card p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <span
-          className={`rounded-full px-3 py-1 text-sm font-semibold ${
-            accepted
-              ? "bg-mint/40 text-ink"
-              : "bg-cool-bg text-cool-ink"
-          }`}
-        >
-          {accepted ? "Aceito" : "Rejeitado"}
+        <span className="flex items-center gap-2 rounded-full bg-bg-elevated px-3 py-1 text-sm font-semibold text-text-primary">
+          <span>{archetype.icon}</span>
+          {archetype.title}
         </span>
-        <time className="text-sm text-ink-soft" dateTime={submission.submittedAt}>
-          {formatDate(submission.submittedAt)}
+        <time className="text-sm text-text-muted" dateTime={session.submittedAt}>
+          {formatDate(session.submittedAt)}
         </time>
       </div>
 
-      {accepted && submission.place ? (
-        <p className="mt-4 text-ink">
-          <span className="font-semibold">Lugar: </span>
-          {submission.place.value}
-          {submission.place.kind === "custom" ? " (sugerido)" : ""}
-        </p>
-      ) : null}
+      <div className="mt-4 space-y-3">
+        <CardChips label="Convergência" ids={session.convergenceIds} />
+        <CardChips label="Curtidos" ids={session.likedCardIds} />
+      </div>
 
-      {accepted && submission.availableDates && submission.availableDates.length > 0 ? (
-        <div className="mt-3">
-          <p className="font-semibold text-ink">Datas disponíveis</p>
-          <ul className="mt-1 flex flex-wrap gap-1.5">
-            {submission.availableDates.map((d) => (
-              <li
-                key={d}
-                className="rounded-full bg-sky/25 px-2.5 py-0.5 text-sm text-ink"
-              >
-                {formatDay(d)}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      {accepted && submission.interests ? (
-        <div className="mt-4 space-y-3">
-          <TagList label="Comida" items={submission.interests.food} />
-          <TagList label="Assuntos" items={submission.interests.topics} />
-          <TagList label="Música" items={submission.interests.music ?? []} />
-          <TagList label="Outros" items={submission.interests.custom} />
-        </div>
-      ) : null}
-
-      <dl className="mt-4 grid grid-cols-2 gap-2 border-t border-ink/10 pt-4 text-sm">
+      <dl className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-4 text-sm">
         <div>
-          <dt className="text-ink-soft">Visitas</dt>
-          <dd className="font-semibold text-ink">{submission.visitCount}</dd>
-        </div>
-        <div>
-          <dt className="text-ink-soft">Já tinha rejeitado</dt>
-          <dd className="font-semibold text-ink">
-            {submission.rejectedBefore ? "Sim" : "Não"}
+          <dt className="text-text-muted">Curtidas</dt>
+          <dd className="font-semibold text-text-primary">
+            {session.likedCardIds.length}
           </dd>
+        </div>
+        <div>
+          <dt className="text-text-muted">Baralho</dt>
+          <dd className="font-semibold text-text-primary">{session.deckSize}</dd>
+        </div>
+        <div>
+          <dt className="text-text-muted">Visitas</dt>
+          <dd className="font-semibold text-text-primary">{session.visitCount}</dd>
         </div>
       </dl>
     </article>

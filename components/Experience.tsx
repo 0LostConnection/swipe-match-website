@@ -1,201 +1,154 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useReducer, useState } from "react";
-import {
-  flowReducer,
-  initFlow,
-  isCoolScreen,
-  type Screen,
-} from "@/lib/flow";
-import {
-  markAccepted,
-  markRejected,
-  registerVisit,
-  type EntryScenario,
-} from "@/lib/storage";
+import { AnimatePresence } from "motion/react";
+import { useEffect, useReducer, useRef, useState } from "react";
+import { SCREEN_CUES } from "@/config/music";
+import { CREATOR_PROFILE } from "@/config/creator";
+import { AudioProvider, useAudio } from "@/lib/audio/AudioProvider";
+import { flowReducer, initFlow, type Screen } from "@/lib/flow";
+import { registerVisit } from "@/lib/storage";
 import { submitAnswers } from "@/lib/submit";
-import type { Submission } from "@/lib/types";
-import { useFlowAssetPreload } from "@/hooks/useFlowAssetPreload";
 
-import { CatInterstitial } from "./screens/CatInterstitial";
-import { CelebrationScreen } from "./screens/CelebrationScreen";
-import { DateAvailabilityScreen } from "./screens/DateAvailabilityScreen";
-import { FinalRejectionScreen } from "./screens/FinalRejectionScreen";
-import { InterestsScreen } from "./screens/InterestsScreen";
-import { IntroScreen } from "./screens/IntroScreen";
-import { MainAskScreen } from "./screens/MainAskScreen";
-import { PlaceSelectionScreen } from "./screens/PlaceSelectionScreen";
-import { ThankYouScreen } from "./screens/ThankYouScreen";
-import { ConfettiBurst } from "./ui/ConfettiBurst";
-import { FloatingBackground } from "./ui/FloatingBackground";
-
-type Meta = {
-  scenario: EntryScenario;
-  visitCount: number;
-  rejectedBefore: boolean;
-};
+import { ConvergenceScreen } from "./screens/ConvergenceScreen";
+import { LoadingScreen } from "./screens/LoadingScreen";
+import { RevealScreen } from "./screens/RevealScreen";
+import { SoundWarningScreen } from "./screens/SoundWarningScreen";
+import { SwipeDeck } from "./screens/SwipeDeck";
+import { WelcomeScreen } from "./screens/WelcomeScreen";
+import { BackgroundFX } from "./ui/BackgroundFX";
+import { MusicToggle } from "./ui/MusicToggle";
 
 export function Experience() {
-  const [meta, setMeta] = useState<Meta | null>(null);
+  const [visitCount, setVisitCount] = useState<number | null>(null);
 
   useEffect(() => {
-    // Read once on mount: localStorage is client-only, so this also prevents a
-    // hydration mismatch on the entry scenario.
+    // localStorage is client-only; reading here also prevents hydration drift.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMeta(registerVisit());
+    setVisitCount(registerVisit().visitCount);
   }, []);
 
-  if (!meta) {
-    // Avoid hydration mismatch: localStorage is only available on the client.
+  if (visitCount === null) {
     return <div className="min-h-[100svh]" />;
   }
 
-  return <ExperienceInner meta={meta} />;
+  return (
+    <AudioProvider>
+      <ExperienceInner visitCount={visitCount} />
+    </AudioProvider>
+  );
 }
 
-function ExperienceInner({ meta }: { meta: Meta }) {
-  const [state, dispatch] = useReducer(flowReducer, meta.scenario, initFlow);
-  const [confetti, setConfetti] = useState(false);
+const MUSIC_SCREENS: Screen[] = ["welcome", "reveal"];
 
-  useFlowAssetPreload(state.screen, meta.scenario);
+function ExperienceInner({ visitCount }: { visitCount: number }) {
+  const [state, dispatch] = useReducer(flowReducer, undefined, initFlow);
+  const submittedRef = useRef(false);
+  const lastMusicScreenRef = useRef<Screen | null>(null);
+  const audio = useAudio();
 
-  const go = useCallback((screen: Screen) => dispatch({ type: "GO", screen }), []);
+  useEffect(() => {
+    if (!MUSIC_SCREENS.includes(state.screen)) return;
+    if (lastMusicScreenRef.current === state.screen) return;
 
-  const coolMood = isCoolScreen(state.screen);
+    const cue = SCREEN_CUES[state.screen];
+    if (!cue) return;
 
-  const buildSubmission = useCallback(
-    (outcome: Submission["outcome"]): Submission => ({
-      outcome,
-      place: outcome === "accepted" ? state.data.place : undefined,
-      availableDates:
-        outcome === "accepted" ? state.data.availableDates : undefined,
-      interests: outcome === "accepted" ? state.data.interests : undefined,
-      visitCount: meta.visitCount,
-      rejectedBefore: meta.rejectedBefore,
+    lastMusicScreenRef.current = state.screen;
+
+    if (state.screen === "welcome") {
+      void audio.playCue(cue);
+      return;
+    }
+
+    void audio.crossfadeTo(cue);
+    // Only react to screen transitions — not mute/toggle state changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.screen]);
+
+  // Fire the anonymous analytics submission once per completed session.
+  useEffect(() => {
+    if (state.screen !== "convergence" || !state.result) return;
+    if (submittedRef.current) return;
+    submittedRef.current = true;
+    void submitAnswers({
+      archetype: state.result,
+      likedCardIds: state.likedIds,
+      convergenceIds: state.convergence.map((c) => c.id),
+      deckSize: state.deck.length,
+      visitCount,
       submittedAt: new Date().toISOString(),
-    }),
-    [state.data, meta.visitCount, meta.rejectedBefore],
-  );
+    });
+  }, [state.screen, state.result, state.likedIds, state.convergence, state.deck.length, visitCount]);
 
-  const fireConfetti = () => {
-    setConfetti(true);
-    setTimeout(() => setConfetti(false), 1600);
-  };
-
-  // --- routing handlers ---------------------------------------------------
-  const handleStart = () => go(meta.scenario === "rejected" ? "cat" : "ask");
-
-  const handleYes = () => {
-    markAccepted();
-    fireConfetti();
-    go("celebration");
-  };
-
-  const handleNo = () => go("secondChance");
-
-  const handleChangedMind = () => go("cat");
-
-  const handleSerio = () => {
-    markRejected();
-    void submitAnswers(buildSubmission("rejected"));
-    go("finalRejection");
-  };
-
-  const handleInterestsDone = () => {
-    void submitAnswers(buildSubmission("accepted"));
-    go("thankyou");
+  const handleProceedSound = () => {
+    void audio.unlock();
+    dispatch({ type: "PROCEED_SOUND" });
   };
 
   const renderScreen = () => {
     switch (state.screen) {
-      case "intro":
+      case "sound":
         return (
-          <IntroScreen
-            key="intro"
-            scenario={meta.scenario}
-            onStart={handleStart}
+          <SoundWarningScreen key="sound" onProceed={handleProceedSound} />
+        );
+      case "welcome":
+        return (
+          <WelcomeScreen key="welcome" onStart={() => dispatch({ type: "START" })} />
+        );
+      case "swipe":
+        return (
+          <SwipeDeck
+            key="swipe"
+            deck={state.deck}
+            currentIndex={state.currentIndex}
+            onSwipe={(dir) => dispatch({ type: "SWIPE", dir })}
           />
         );
-      case "cat":
-        return <CatInterstitial key="cat" onDone={() => go("ask")} />;
-      // ask + secondChance share one mounted component (stable key) so the
-      // happy->sad change is a smart in-place transition, not a screen swap.
-      case "ask":
-      case "secondChance":
+      case "loading":
         return (
-          <MainAskScreen
-            key="askflow"
-            phase={state.screen === "secondChance" ? "second" : "ask"}
-            onYes={handleYes}
-            onNo={handleNo}
-            onChangedMind={handleChangedMind}
-            onSerio={handleSerio}
+          <LoadingScreen
+            key="loading"
+            onDone={() => dispatch({ type: "FINISH_LOADING" })}
           />
         );
-      case "celebration":
+      case "reveal":
+        return state.result ? (
+          <RevealScreen
+            key="reveal"
+            result={state.result}
+            onContinue={() => dispatch({ type: "GO", screen: "convergence" })}
+          />
+        ) : null;
+      case "convergence":
         return (
-          <CelebrationScreen key="celebration" onDone={() => go("place")} />
-        );
-      case "place":
-        return (
-          <PlaceSelectionScreen
-            key="place"
-            selected={state.data.place}
-            onSelect={(place) => dispatch({ type: "SET_PLACE", place })}
-            onNext={() => go("dates")}
+          <ConvergenceScreen
+            key="convergence"
+            convergence={state.convergence}
+            creatorName={CREATOR_PROFILE.name}
+            onRestart={() => {
+              submittedRef.current = false;
+              lastMusicScreenRef.current = null;
+              dispatch({ type: "RESTART" });
+            }}
           />
         );
-      case "dates":
-        return (
-          <DateAvailabilityScreen
-            key="dates"
-            selected={state.data.availableDates}
-            onChange={(dates) => dispatch({ type: "SET_DATES", dates })}
-            onNext={() => go("interests")}
-          />
-        );
-      case "interests":
-        return (
-          <InterestsScreen
-            key="interests"
-            value={state.data.interests}
-            onChange={(interests) =>
-              dispatch({ type: "SET_INTERESTS", interests })
-            }
-            onDone={handleInterestsDone}
-          />
-        );
-      case "thankyou":
-        return (
-          <ThankYouScreen
-            key="thankyou"
-            onRestart={() => dispatch({ type: "RESTART" })}
-          />
-        );
-      case "finalRejection":
-        return <FinalRejectionScreen key="finalRejection" />;
       default:
         return null;
     }
   };
 
+  const showMusicToggle = state.screen !== "sound";
+
   return (
     <main className="relative min-h-[100svh] w-full overflow-hidden">
-      {/* Cool palette overlay for the rejection branch */}
-      <motion.div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0"
-        style={{ backgroundColor: "var(--cool-bg)" }}
-        animate={{ opacity: coolMood ? 1 : 0 }}
-        transition={{ duration: 0.6 }}
-      />
-
-      <FloatingBackground mood={coolMood ? "cool" : "happy"} />
-
+      <BackgroundFX />
+      {showMusicToggle && (
+        <MusicToggle
+          audible={audio.userAudible}
+          onToggle={() => audio.setUserAudible(!audio.userAudible)}
+        />
+      )}
       <AnimatePresence mode="wait">{renderScreen()}</AnimatePresence>
-
-      <ConfettiBurst active={confetti} />
     </main>
   );
 }

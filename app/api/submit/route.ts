@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
-import { insertSubmission, isDbConfigured } from "@/lib/db";
-import type { Submission } from "@/lib/types";
+import { ARCHETYPE_IDS } from "@/lib/archetypes";
+import { insertSession, isDbConfigured } from "@/lib/db";
+import type { ArchetypeId, Submission } from "@/lib/types";
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((v) => typeof v === "string");
+}
 
 function isValid(body: unknown): body is Submission {
   if (typeof body !== "object" || body === null) return false;
   const b = body as Record<string, unknown>;
   return (
-    (b.outcome === "accepted" || b.outcome === "rejected") &&
+    typeof b.archetype === "string" &&
+    ARCHETYPE_IDS.includes(b.archetype as ArchetypeId) &&
+    isStringArray(b.likedCardIds) &&
+    isStringArray(b.convergenceIds) &&
+    typeof b.deckSize === "number" &&
     typeof b.visitCount === "number" &&
-    typeof b.rejectedBefore === "boolean" &&
     typeof b.submittedAt === "string"
   );
 }
@@ -27,7 +35,7 @@ export async function POST(request: Request) {
 
   if (isDbConfigured()) {
     try {
-      await insertSubmission(body);
+      await insertSession(body);
     } catch (err) {
       console.error("[submit] database insert failed:", err);
       return NextResponse.json({ ok: false, error: "storage failed" }, { status: 500 });
@@ -37,7 +45,6 @@ export async function POST(request: Request) {
   const webhookUrl = process.env.WEBHOOK_URL;
 
   if (!webhookUrl) {
-    // No webhook configured yet: log it so it's visible during development.
     console.log("[submit] (no WEBHOOK_URL set) payload:", JSON.stringify(body, null, 2));
     return NextResponse.json({ ok: true, forwarded: false });
   }

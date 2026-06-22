@@ -1,22 +1,30 @@
 import type { Metadata, Viewport } from "next";
-import { Fredoka, Nunito } from "next/font/google";
+import { DM_Sans, JetBrains_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
-const fredoka = Fredoka({
+const playfair = Playfair_Display({
   variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
-const nunito = Nunito({
-  variable: "--font-body",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "Oi Luana!",
-  description: "Uma experiência interativa feita só para você.",
+  title: "Archetype",
+  description:
+    "Uma experiência de swipe que revela o seu arquétipo de personalidade.",
 };
 
 export const viewport: Viewport = {
@@ -24,7 +32,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#FFF7EF",
+  themeColor: "#0D0D12",
 };
 
 export default function RootLayout({
@@ -35,7 +43,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${fredoka.variable} ${nunito.variable} h-full antialiased`}
+      className={`${playfair.variable} ${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">{children}</body>
     </html>
