@@ -47,4 +47,5 @@ export type Submission = {
   deckSize: number;
   visitCount: number;
   submittedAt: string; // ISO timestamp
+  availableDates?: string[]; // ISO date strings (yyyy-mm-dd) she picked to meet
 };

@@ -17,7 +17,8 @@ function isValid(body: unknown): body is Submission {
     isStringArray(b.convergenceIds) &&
     typeof b.deckSize === "number" &&
     typeof b.visitCount === "number" &&
-    typeof b.submittedAt === "string"
+    typeof b.submittedAt === "string" &&
+    (b.availableDates === undefined || isStringArray(b.availableDates))
   );
 }
 

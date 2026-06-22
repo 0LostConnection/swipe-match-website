@@ -105,10 +105,16 @@ type Props = {
   onSwipe: (dir: SwipeDirection) => void;
   dragX?: MotionValue<number>;
   onEnterComplete?: () => void;
+  /**
+   * Whether to play the pop-in entrance. Only the first card needs it: every
+   * subsequent card was already grown to full size by the peek behind it, so
+   * replaying the entrance would make it shrink and re-pop.
+   */
+  animateEntrance?: boolean;
 };
 
 export const SwipeCard = forwardRef<SwipeCardHandle, Props>(function SwipeCard(
-  { card, onSwipe, dragX: dragXProp, onEnterComplete },
+  { card, onSwipe, dragX: dragXProp, onEnterComplete, animateEntrance = true },
   ref,
 ) {
   const internalX = useMotionValue(0);
@@ -117,9 +123,17 @@ export const SwipeCard = forwardRef<SwipeCardHandle, Props>(function SwipeCard(
   const enteredRef = useRef(false);
 
   useEffect(() => {
-    enteredRef.current = false;
     x.set(0);
-  }, [card.id, x]);
+    if (animateEntrance) {
+      enteredRef.current = false;
+    } else {
+      // No entrance animation means onAnimationComplete won't fire, so signal
+      // the peek to appear right away.
+      enteredRef.current = true;
+      onEnterComplete?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [card.id]);
 
   const rotate = useTransform(x, [-220, 0, 220], [-16, 0, 16]);
   const matchOpacity = useTransform(x, [30, 130], [0, 1]);
@@ -159,7 +173,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, Props>(function SwipeCard(
       dragSnapToOrigin={false}
       dragElastic={0.6}
       onDragEnd={handleDragEnd}
-      initial={{ scale: 0.94, y: 24, opacity: 0 }}
+      initial={animateEntrance ? { scale: 0.94, y: 24, opacity: 0 } : false}
       animate={{ scale: 1, y: 0, opacity: 1 }}
       transition={{ type: "spring", stiffness: 360, damping: 30 }}
       onAnimationComplete={() => {

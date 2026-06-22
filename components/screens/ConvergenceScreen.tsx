@@ -2,6 +2,7 @@
 
 import { motion, type Variants } from "motion/react";
 import { ConvergenceItem } from "@/components/ui/ConvergenceItem";
+import { EpicButton } from "@/components/ui/EpicButton";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { ScreenShell } from "@/components/ui/ScreenShell";
 import { LOW_CONVERGENCE_MESSAGE, MIN_CONVERGENCE } from "@/lib/scoring";
@@ -18,12 +19,14 @@ type Props = {
   convergence: Card[];
   creatorName: string;
   onRestart: () => void;
+  onPickDate: () => void;
 };
 
 export function ConvergenceScreen({
   convergence,
   creatorName,
   onRestart,
+  onPickDate,
 }: Props) {
   const hasEnough = convergence.length >= MIN_CONVERGENCE;
 
@@ -70,7 +73,7 @@ export function ConvergenceScreen({
       </div>
 
       <motion.footer
-        className="absolute inset-x-0 bottom-0 z-20 px-6 pt-16 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+        className="absolute bottom-0 left-1/2 z-20 w-screen -translate-x-1/2 px-6 pt-16 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
         style={{
           background:
             "linear-gradient(to top, var(--bg-base) 0%, color-mix(in srgb, var(--bg-base) 92%, transparent) 55%, transparent 100%)",
@@ -79,8 +82,11 @@ export function ConvergenceScreen({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, type: "spring", stiffness: 280, damping: 22 }}
       >
-        <div className="relative z-10 flex justify-center">
-          <PrimaryButton onClick={onRestart}>Refazer</PrimaryButton>
+        <div className="relative z-10 flex items-center justify-center gap-3">
+          <PrimaryButton variant="ghost" onClick={onRestart}>
+            Refazer
+          </PrimaryButton>
+          <EpicButton onClick={onPickDate}>Bora marcar? ✨</EpicButton>
         </div>
       </motion.footer>
     </ScreenShell>

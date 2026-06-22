@@ -7,6 +7,7 @@ export const TRACKS: Record<
 > = {
   welcome: { src: "/audio/welcome.mp3", loop: true },
   convergence: { src: "/audio/convergence.mp3", loop: true },
+  date: { src: "/audio/date-groovy.mp3", loop: true },
 };
 
 export const TRACK_IDS = Object.keys(TRACKS) as TrackId[];
@@ -20,6 +21,7 @@ export const DEFAULT_FADE_MS = {
 export const SCREEN_CUES: Partial<Record<Screen, MusicCue>> = {
   welcome: { track: "welcome", startAt: 0, fadeInMs: 2000 },
   reveal: { track: "convergence", startAt: 0, fadeOutMs: 800, fadeInMs: 1200 },
+  date: { track: "date", startAt: 0, fadeOutMs: 800, fadeInMs: 1200 },
 };
 
 export function getReducedFadeMs(ms: number): number {

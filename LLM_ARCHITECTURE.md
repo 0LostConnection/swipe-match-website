@@ -46,12 +46,16 @@ Admin (server-protected)
 ### User flow (state machine)
 
 ```
-sound → welcome → swipe (deck) → loading (~3s) → reveal → convergence
+sound → welcome → swipe (deck) → loading (~3s) → reveal → convergence → [date]
 ```
 
 - `sound` — headphones/volume warning; **Prosseguir** unlocks `AudioContext`
 - Music starts automatically on entering `welcome` (preload runs during `sound`)
-- `RESTART` from convergence returns to `welcome` (skips `sound`)
+- `date` — optional screen reached via the epic CTA beside **Refazer** on
+  `convergence`; a calendar (seeded with `SUGGESTED_DATES`) lets her pick day(s),
+  which are re-submitted via `submitAnswers` as `availableDates`. Plays the
+  `date` (groovy) track.
+- `RESTART` from convergence/date returns to `welcome` (skips `sound`)
 - Global **MusicToggle** mutes output only; the engine keeps playing for sync
 
 No archetype names are shown during swipe; progress is by card count only.
@@ -117,7 +121,7 @@ npm run lint   # eslint
 │   ├── db.ts                   # Neon schema + CRUD (archetype_sessions)
 │   └── admin-auth*.ts          # HMAC session (Node + Edge)
 ├── public/
-│   └── audio/                  # MP3 tracks (welcome, convergence)
+│   └── audio/                  # MP3 tracks (welcome, convergence, date)
 └── tsconfig.json               # Path alias: @/* → ./*
 ```
 
@@ -134,7 +138,8 @@ type Screen =
   | "swipe"
   | "loading"
   | "reveal"
-  | "convergence";
+  | "convergence"
+  | "date";
 
 type FlowAction =
   | { type: "PROCEED_SOUND" }                  // sound -> welcome
@@ -142,6 +147,7 @@ type FlowAction =
   | { type: "SWIPE"; dir: "like" | "pass" }    // records like, advances
   | { type: "FINISH_LOADING" }                 // loading -> reveal
   | { type: "GO"; screen: Screen }
+  | { type: "SET_DATES"; dates: string[] }     // date screen selection
   | { type: "RESTART" };                       // -> welcome (not sound)
 ```
 

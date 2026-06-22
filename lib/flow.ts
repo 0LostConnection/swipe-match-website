@@ -10,7 +10,11 @@ export type Screen =
   | "swipe"
   | "loading"
   | "reveal"
-  | "convergence";
+  | "convergence"
+  | "date";
+
+/** Days pre-highlighted on the date screen as a gentle suggestion. */
+export const SUGGESTED_DATES = ["2026-06-26", "2026-06-27"];
 
 export type FlowState = {
   screen: Screen;
@@ -19,6 +23,7 @@ export type FlowState = {
   likedIds: string[];
   result: ArchetypeId | null;
   convergence: Card[];
+  availableDates: string[];
 };
 
 export type FlowAction =
@@ -27,6 +32,7 @@ export type FlowAction =
   | { type: "SWIPE"; dir: SwipeDirection }
   | { type: "FINISH_LOADING" }
   | { type: "GO"; screen: Screen }
+  | { type: "SET_DATES"; dates: string[] }
   | { type: "RESTART" };
 
 export function initFlow(): FlowState {
@@ -37,6 +43,7 @@ export function initFlow(): FlowState {
     likedIds: [],
     result: null,
     convergence: [],
+    availableDates: [...SUGGESTED_DATES],
   };
 }
 
@@ -102,6 +109,9 @@ export function flowReducer(state: FlowState, action: FlowAction): FlowState {
 
     case "GO":
       return { ...state, screen: action.screen };
+
+    case "SET_DATES":
+      return { ...state, availableDates: action.dates };
 
     case "RESTART":
       return {

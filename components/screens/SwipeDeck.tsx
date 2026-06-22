@@ -75,6 +75,7 @@ export function SwipeDeck({ deck, currentIndex, onSwipe }: Props) {
             dragX={dragX}
             onSwipe={onSwipe}
             onEnterComplete={() => setPeekAfterIndex(currentIndex)}
+            animateEntrance={currentIndex === 0}
           />
         ) : null}
       </div>

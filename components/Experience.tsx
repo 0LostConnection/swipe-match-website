@@ -10,6 +10,7 @@ import { registerVisit } from "@/lib/storage";
 import { submitAnswers } from "@/lib/submit";
 
 import { ConvergenceScreen } from "./screens/ConvergenceScreen";
+import { DateScreen } from "./screens/DateScreen";
 import { LoadingScreen } from "./screens/LoadingScreen";
 import { RevealScreen } from "./screens/RevealScreen";
 import { SoundWarningScreen } from "./screens/SoundWarningScreen";
@@ -38,11 +39,12 @@ export function Experience() {
   );
 }
 
-const MUSIC_SCREENS: Screen[] = ["welcome", "reveal"];
+const MUSIC_SCREENS: Screen[] = ["welcome", "reveal", "date"];
 
 function ExperienceInner({ visitCount }: { visitCount: number }) {
   const [state, dispatch] = useReducer(flowReducer, undefined, initFlow);
   const submittedRef = useRef(false);
+  const dateSubmittedRef = useRef(false);
   const lastMusicScreenRef = useRef<Screen | null>(null);
   const audio = useAudio();
 
@@ -85,6 +87,30 @@ function ExperienceInner({ visitCount }: { visitCount: number }) {
     dispatch({ type: "PROCEED_SOUND" });
   };
 
+  // Re-sends the result with the day(s) she picked. Uses the same Submission
+  // pipeline as the convergence submit; guarded so re-confirming doesn't dupe.
+  const handleConfirmDates = (dates: string[]) => {
+    dispatch({ type: "SET_DATES", dates });
+    if (dateSubmittedRef.current || !state.result) return;
+    dateSubmittedRef.current = true;
+    void submitAnswers({
+      archetype: state.result,
+      likedCardIds: state.likedIds,
+      convergenceIds: state.convergence.map((c) => c.id),
+      deckSize: state.deck.length,
+      visitCount,
+      submittedAt: new Date().toISOString(),
+      availableDates: dates,
+    });
+  };
+
+  const handleRestart = () => {
+    submittedRef.current = false;
+    dateSubmittedRef.current = false;
+    lastMusicScreenRef.current = null;
+    dispatch({ type: "RESTART" });
+  };
+
   const renderScreen = () => {
     switch (state.screen) {
       case "sound":
@@ -125,11 +151,18 @@ function ExperienceInner({ visitCount }: { visitCount: number }) {
             key="convergence"
             convergence={state.convergence}
             creatorName={CREATOR_PROFILE.name}
-            onRestart={() => {
-              submittedRef.current = false;
-              lastMusicScreenRef.current = null;
-              dispatch({ type: "RESTART" });
-            }}
+            onRestart={handleRestart}
+            onPickDate={() => dispatch({ type: "GO", screen: "date" })}
+          />
+        );
+      case "date":
+        return (
+          <DateScreen
+            key="date"
+            selected={state.availableDates}
+            onChange={(dates) => dispatch({ type: "SET_DATES", dates })}
+            onConfirm={handleConfirmDates}
+            onRestart={handleRestart}
           />
         );
       default:

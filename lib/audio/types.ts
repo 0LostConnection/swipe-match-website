@@ -1,4 +1,4 @@
-export type TrackId = "welcome" | "convergence";
+export type TrackId = "welcome" | "convergence" | "date";
 
 export type LoadState = "idle" | "loading" | "ready" | "error";
 
