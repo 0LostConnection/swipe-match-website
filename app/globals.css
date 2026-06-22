@@ -1,39 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  /* Cute "scrapbook / sticker-pack" palette */
-  --cream: #fff7ef;
-  --cream-deep: #ffeede;
-  --ink: #3b2a2a;
-  --ink-soft: #6b5550;
-  --pink: #ff8fb1;
-  --pink-deep: #ff6f9c;
-  --sky: #7fd1ff;
-  --sun: #ffd56b;
-  --mint: #9be7c4;
-  --grape: #b79bff;
-
-  /* Cooler, dimmer palette used on the rejection branch */
-  --cool-bg: #e9ecf5;
-  --cool-ink: #4a4f63;
+  /* Dark / RPG palette */
+  --bg-base: #0d0d12;
+  --bg-card: #16161f;
+  --bg-elevated: #1e1e2a;
+  --accent-primary: #c084fc;
+  --accent-secondary: #38bdf8;
+  --accent-danger: #f87171;
+  --text-primary: #f1f0ff;
+  --text-muted: #6b6b8a;
+  --border: #2a2a3a;
 }
 
 @theme inline {
-  --color-cream: var(--cream);
-  --color-cream-deep: var(--cream-deep);
-  --color-ink: var(--ink);
-  --color-ink-soft: var(--ink-soft);
-  --color-pink: var(--pink);
-  --color-pink-deep: var(--pink-deep);
-  --color-sky: var(--sky);
-  --color-sun: var(--sun);
-  --color-mint: var(--mint);
-  --color-grape: var(--grape);
-  --color-cool-bg: var(--cool-bg);
-  --color-cool-ink: var(--cool-ink);
+  --color-bg-base: var(--bg-base);
+  --color-bg-card: var(--bg-card);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-secondary: var(--accent-secondary);
+  --color-accent-danger: var(--accent-danger);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
 }
 
 html,
@@ -43,44 +36,72 @@ body {
 
 body {
   background:
-    radial-gradient(120% 120% at 10% -10%, var(--cream-deep) 0%, transparent 45%),
-    radial-gradient(120% 120% at 110% 10%, #fde9f0 0%, transparent 40%),
-    var(--cream);
-  color: var(--ink);
+    radial-gradient(
+      120% 120% at 15% -10%,
+      rgba(192, 132, 252, 0.12) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      120% 120% at 110% 10%,
+      rgba(56, 189, 248, 0.1) 0%,
+      transparent 42%
+    ),
+    var(--bg-base);
+  color: var(--text-primary);
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-  /* Subtle paper grain for the scrapbook feel */
   background-attachment: fixed;
   overscroll-behavior: none;
 }
 
-/* Speckled paper noise overlay */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.4;
-  background-image: radial-gradient(rgba(59, 42, 42, 0.05) 1px, transparent 1px);
-  background-size: 18px 18px;
-}
-
 .font-display {
-  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-display), ui-serif, Georgia, serif;
 }
 
-/* Chunky sticker shadow used on cards/buttons */
-.sticker {
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Soft elevation used on cards/surfaces */
+.elevated {
   box-shadow:
-    0 2px 0 rgba(59, 42, 42, 0.12),
-    0 10px 24px -10px rgba(59, 42, 42, 0.35);
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 24px 48px -24px rgba(0, 0, 0, 0.8);
 }
 
-.sticker-outline {
-  border: 3px solid var(--ink);
+/* Animated conic gradient border for the reveal card */
+@property --angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
 }
 
-/* Pressable button squish handled mostly in JS, but give a base feel */
+@keyframes spin-border {
+  to {
+    --angle: 360deg;
+  }
+}
+
+@keyframes badge-shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+@keyframes badge-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+
 .tap-target {
   min-height: 48px;
   min-width: 48px;
@@ -88,7 +109,6 @@ body::before {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Hide scrollbars but keep scrolling on the place list */
 .no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
