@@ -3,7 +3,7 @@ import type { ArchetypeId, ArchetypeScores, Card, CardCategory } from "./types";
 
 /** Shown on the convergence screen when fewer than 2 tastes overlap. */
 export const LOW_CONVERGENCE_MESSAGE =
-  "Gostos parecidos? Poucos. Mas você tem exatamente o que não tem no perfil dele — e isso é mais interessante do que parece.";
+  "Gostos parecidos? Poucos. Mas nós temos exa tamente o que nós não temos — e isso é mais interessante do que parece.";
 
 /** Minimum shared cards required before showing the real convergence list. */
 export const MIN_CONVERGENCE = 2;

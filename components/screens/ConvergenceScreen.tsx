@@ -45,7 +45,7 @@ export function ConvergenceScreen({
             Gostos que a gente divide
           </h2>
           <p className="mt-2 font-body text-sm text-text-muted">
-            O que você e {creatorName} têm em comum.
+            O que nóstemos em comum.
           </p>
         </motion.header>
 

@@ -1,4 +1,4 @@
-import { getReducedFadeMs, TRACKS } from "@/config/music";
+import { getReducedFadeMs, MASTER_VOLUME, TRACKS } from "@/config/music";
 import { getBuffer, preloadTrack } from "./preload";
 import type { CrossfadeOptions, MusicCue, TrackId } from "./types";
 
@@ -23,7 +23,7 @@ export class AudioEngine {
       this.ctx = new AudioContext();
       this.userGain = this.ctx.createGain();
       this.userGain.connect(this.ctx.destination);
-      this.userGain.gain.value = this.userAudible ? 1 : 0;
+      this.userGain.gain.value = this.userAudible ? MASTER_VOLUME : 0;
     }
     return this.ctx;
   }
@@ -64,7 +64,10 @@ export class AudioEngine {
     const now = this.ctx.currentTime;
     this.userGain.gain.cancelScheduledValues(now);
     this.userGain.gain.setValueAtTime(this.userGain.gain.value, now);
-    this.userGain.gain.linearRampToValueAtTime(audible ? 1 : 0, now + 0.15);
+    this.userGain.gain.linearRampToValueAtTime(
+      audible ? MASTER_VOLUME : 0,
+      now + 0.15,
+    );
   }
 
   async playCue(cue: MusicCue): Promise<void> {

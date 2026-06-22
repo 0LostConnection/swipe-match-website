@@ -12,6 +12,9 @@ export const TRACKS: Record<
 
 export const TRACK_IDS = Object.keys(TRACKS) as TrackId[];
 
+/** Global playback level (0–1). Applied to all tracks; mute still goes to 0. */
+export const MASTER_VOLUME = 0.5;
+
 export const DEFAULT_FADE_MS = {
   in: 1200,
   out: 800,
