@@ -13,9 +13,6 @@ export type Screen =
   | "convergence"
   | "date";
 
-/** Days pre-highlighted on the date screen as a gentle suggestion. */
-export const SUGGESTED_DATES = ["2026-06-26", "2026-06-27"];
-
 export type FlowState = {
   screen: Screen;
   deck: Card[];
@@ -43,7 +40,7 @@ export function initFlow(): FlowState {
     likedIds: [],
     result: null,
     convergence: [],
-    availableDates: [...SUGGESTED_DATES],
+    availableDates: [],
   };
 }
 

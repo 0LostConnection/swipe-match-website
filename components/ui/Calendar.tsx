@@ -30,12 +30,17 @@ function iso(year: number, month: number, day: number): string {
   return `${year}-${m}-${d}`;
 }
 
+/** First selectable day — strictly after 20/07/2026. */
+const MIN_SELECTABLE = new Date(2026, 6, 21);
+
 export function Calendar({ selected, onChange }: Props) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const earliest =
+    today > MIN_SELECTABLE ? today : MIN_SELECTABLE;
   const [view, setView] = useState({
-    year: today.getFullYear(),
-    month: today.getMonth(),
+    year: earliest.getFullYear(),
+    month: earliest.getMonth(),
   });
 
   const firstDay = new Date(view.year, view.month, 1).getDay();
@@ -46,8 +51,8 @@ export function Calendar({ selected, onChange }: Props) {
   ];
 
   const canGoPrev =
-    view.year > today.getFullYear() ||
-    (view.year === today.getFullYear() && view.month > today.getMonth());
+    view.year > earliest.getFullYear() ||
+    (view.year === earliest.getFullYear() && view.month > earliest.getMonth());
 
   const shift = (delta: number) => {
     setView((v) => {
@@ -65,7 +70,8 @@ export function Calendar({ selected, onChange }: Props) {
     }
   };
 
-  const isPast = (day: number) => new Date(view.year, view.month, day) < today;
+  const isDisabled = (day: number) =>
+    new Date(view.year, view.month, day) < earliest;
 
   return (
     <div className="elevated w-full rounded-3xl border border-border bg-bg-card p-4">
@@ -103,12 +109,12 @@ export function Calendar({ selected, onChange }: Props) {
           if (day === null) return <div key={`e-${i}`} />;
           const value = iso(view.year, view.month, day);
           const isSelected = selected.includes(value);
-          const past = isPast(day);
+          const disabled = isDisabled(day);
           return (
             <motion.button
               key={value}
               type="button"
-              disabled={past}
+              disabled={disabled}
               onClick={() => toggle(day)}
               whileTap={{ scale: 0.85 }}
               className="relative flex aspect-square min-w-0 touch-manipulation items-center justify-center rounded-2xl text-sm font-semibold disabled:opacity-25"
