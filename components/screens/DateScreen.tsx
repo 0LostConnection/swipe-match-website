@@ -47,7 +47,7 @@ export function DateScreen({ selected, onChange, onConfirm, onRestart }: Props) 
             Quando a gente sai?
           </h2>
           <p className="mt-2 font-body text-sm text-text-muted">
-            Escolha um ou mais dias disponíveis após o dia 20/07.
+            Escolha um ou mais dias disponíveis.
           </p>
         </motion.header>
 
